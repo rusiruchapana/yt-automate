@@ -1,0 +1,29 @@
+services:
+  studio:
+    build: .
+    image: purple-local-studio:1.0
+    ports:
+      - "127.0.0.1:8787:8787"
+    volumes:
+      - ./data:/data
+    environment:
+      STUDIO_DATA: /data
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 30s
+    logging:
+      options:
+        max-size: "5m"
+        max-file: "2"
+  auth:
+    image: purple-local-studio:1.0
+    profiles: [tools]
+    ports:
+      - "127.0.0.1:8765:8765"
+    volumes:
+      - ./data:/data
+    environment:
+      STUDIO_DATA: /data
+      OAUTH_BIND_ADDRESS: 0.0.0.0
+    command: ["python", "scripts/connect_youtube.py", "--no-browser"]
+    init: true

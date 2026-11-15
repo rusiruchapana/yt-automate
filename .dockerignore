@@ -1,0 +1,8 @@
+data
+.venv
+__pycache__
+**/__pycache__
+test-output
+.git
+*.zip
+*.pdf

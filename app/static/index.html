@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Purple Local Studio</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <a href="#studio" class="brand"><span class="brand-mark">P</span><span>Purple<span class="brand-sub">LOCAL STUDIO</span></span></a>
+    <div class="sidebar-caption">YOUR CREATOR WORKSPACE</div>
+    <nav aria-label="Main navigation">
+      <button type="button" class="nav-item active" data-tab="studio" aria-current="page"><span>01</span> Create a video</button>
+      <button type="button" class="nav-item" data-tab="library"><span>02</span> Media &amp; music</button>
+      <button type="button" class="nav-item" data-tab="queue"><span>03</span> Publishing queue <b id="queue-badge">0</b></button>
+      <button type="button" class="nav-item" data-tab="settings"><span>04</span> YouTube &amp; settings</button>
+      <button type="button" class="nav-item" data-tab="guide"><span>05</span> Getting started</button>
+    </nav>
+    <div class="local-note"><span class="status-dot"></span> Runs on your computer<p>No paid AI API. Your files stay here until you choose to upload a video.</p></div>
+    <div class="sidebar-footer">Unofficial fan creation toolkit<br>Version 1.0 · Free local edition</div>
+  </aside>
+
+  <main>
+    <header class="topbar"><span id="page-label">Create a video</span><div class="topbar-status"><span class="pill" id="upload-status">Uploads off</span><span class="pill neutral">$0 paid API usage</span></div></header>
+    <div class="content">
+      <div id="connection-error" class="notice danger" hidden>Cannot reach the local studio. Check that the app or Docker container is running.</div>
+
+      <section id="tab-studio" class="tab-panel">
+        <div class="page-heading"><div><div class="eyebrow">ENGLISH FAN CONTENT, YOUR WAY</div><h1>Make something worth watching.</h1><p>Turn your own scenes, words and music into a vertical video.</p></div><button type="button" id="demo-button" class="button secondary">Try the free demo</button></div>
+        <div class="stats-row" aria-label="Queue summary">
+          <div class="stat"><span>In production</span><strong id="stat-production">0</strong></div>
+          <div class="stat"><span>Awaiting review</span><strong id="stat-review">0</strong></div>
+          <div class="stat"><span>Ready to upload</span><strong id="stat-ready">0</strong></div>
+          <div class="stat"><span>Local storage</span><strong id="stat-storage">0 MB</strong></div>
+        </div>
+        <div class="studio-grid">
+          <section class="panel editor">
+            <div class="panel-heading"><h2 id="editor-heading">Your next video</h2><span class="small muted">720p portrait by default</span></div>
+            <form id="video-form">
+              <input name="job_id" type="hidden">
+              <label>Video title<input name="title" maxlength="100" required placeholder="Give your story or quiz a clear promise"></label>
+              <div class="form-grid">
+                <label>Format<select name="format"><option value="quiz">Fan quiz</option><option value="story">Fictional mini-story</option><option value="fact">Verified fact</option><option value="commentary">Original commentary</option><option value="showcase">Creator showcase</option></select></label>
+                <label>Music mood<select name="mood"><option value="any">Any mood</option><option value="energetic">Energetic</option><option value="calm">Calm</option><option value="emotional">Emotional</option><option value="funny">Funny</option></select></label>
+              </div>
+              <label>Scene text <span class="label-hint">3–6 lines; one scene per line</span><textarea name="scenes" rows="5" required placeholder="Start with a question or a small surprise.&#10;Build the story or give your clues.&#10;Deliver the answer or the ending."></textarea></label>
+              <div class="form-grid">
+                <label>Seconds per scene<input name="seconds_per_scene" type="number" min="3" max="10" value="6" step="0.5" required></label>
+                <label>Framing<select name="fit"><option value="contain">Fit full image / clip</option><option value="cover">Fill frame (center crop)</option></select></label>
+                <label>Music track<select id="music-select" name="music_id"><option value="">Choose automatically</option></select></label>
+                <label>Visuals<select id="visual-select" name="visual_id"><option value="">Rotate enabled visuals</option></select></label>
+              </div>
+              <label>Factual source URL <span class="label-hint">Required for facts and quizzes</span><input name="source_url" type="url" placeholder="https://official-source.example/page"></label>
+              <label>Description <span class="label-hint">Credits are added automatically</span><textarea name="description" rows="2" maxlength="3000" placeholder="Add useful context for viewers"></textarea></label>
+              <div class="form-grid">
+                <label>Audience<select name="audience" required><option value="undecided">Choose after assessing your content</option><option value="general">Not made for kids</option><option value="kids">Made for kids</option></select></label>
+                <label>Delivery<select name="delivery" id="delivery-select"><option value="private">Private upload for testing</option><option value="scheduled">Scheduled public video</option></select></label>
+              </div>
+              <label id="schedule-field" hidden>Publication time <span class="timezone-label">Asia/Colombo</span><input name="publish_local" type="datetime-local"><span class="small muted">Allow at least 2 hours for a batch. Missed slots are held, not posted late.</span></label>
+              <label class="check"><input name="synthetic" type="checkbox"><span>This video requires YouTube's altered / synthetic content disclosure.</span></label>
+              <div class="form-footer"><span class="small muted" id="editor-note">Rendering is local. Preview before approving.</span><button type="button" class="button ghost" id="cancel-edit" hidden>Cancel edit</button><button type="submit" class="button primary" id="create-button">Create video</button></div>
+            </form>
+          </section>
+          <aside class="preview-column">
+            <section class="panel preview-panel"><div class="panel-heading"><h2>Latest preview</h2><span class="small muted">9:16</span></div>
+              <div class="phone-frame"><div id="preview-placeholder"><span class="preview-orb"></span><strong>Your next story<br>starts here.</strong><span>Load the demo or create a video.</span></div><video id="latest-video" controls playsinline preload="metadata" hidden></video></div>
+              <p id="preview-caption" class="small muted">The demo uses original abstract graphics and a short original music loop.</p>
+            </section>
+            <section class="quiet-note"><h3>Start with a real idea.</h3><p>A new song or background alone does not make a new video. Give every quiz, story or explainer a different point.</p></section>
+          </aside>
+        </div>
+        <section class="panel batch-panel"><div class="panel-heading"><div><h2>Prepare a whole batch</h2><p class="muted small">Import distinct scripts now; let the queue handle rendering and upload.</p></div><a class="text-link" href="/api/examples/starter-scripts.csv">Download example CSV</a></div>
+          <form id="batch-form"><div class="form-grid three"><label>UTF-8 script CSV<input type="file" name="file" accept=".csv" required></label><label>First publication time <span class="timezone-label">Asia/Colombo</span><input name="start_local" type="datetime-local"></label><label>Spacing in minutes<input type="number" name="interval_minutes" value="60" min="60" max="10080"></label></div>
+            <label class="check"><input type="checkbox" name="reviewed"><span>I reviewed every finished script, source, audience and selected asset. Automatically approve these videos after rendering.</span></label>
+            <div class="form-footer"><a href="/api/examples/hourly-plan-template.csv" class="text-link small">24-slot draft template</a><button type="submit" class="button secondary">Import batch</button></div>
+          </form>
+        </section>
+      </section>
+
+      <section id="tab-library" class="tab-panel" hidden>
+        <div class="page-heading"><div><div class="eyebrow">YOUR SOURCE MATERIAL</div><h1>A library with your own rhythm.</h1><p>Upload clips, artwork and music. Enable only material cleared for your use.</p></div></div>
+        <section class="panel"><h2>Add media or music</h2><form id="asset-form"><div class="form-grid three">
+          <label>File<input name="file" type="file" accept=".jpg,.jpeg,.png,.webp,.mp4,.mov,.webm,.mkv,.mp3,.wav,.m4a,.ogg,.flac" required></label>
+          <label>Title<input name="title" maxlength="120" required placeholder="A name you can find later"></label>
+          <label>Kind<select name="kind"><option value="visual">Image or video clip</option><option value="music">Background music</option></select></label>
+          <label>Mood<select name="mood"><option value="any">Any mood</option><option value="energetic">Energetic</option><option value="calm">Calm</option><option value="emotional">Emotional</option><option value="funny">Funny</option></select></label>
+          <label>Source / license URL<input name="source_url" type="url" placeholder="Optional reference"></label>
+          <label>Required credit<input name="attribution" maxlength="1500" placeholder="Exact attribution, if required"></label>
+        </div><label>Usage permission / license notes<textarea name="rights_notes" rows="2" maxlength="2000" placeholder="Example: I created this recording and control its composition and recording rights."></textarea></label>
+        <div class="form-footer"><label class="check"><input type="checkbox" name="enabled"><span>Permission recorded: allow automatic use.</span></label><button type="submit" class="button primary">Upload to library</button></div></form></section>
+        <div class="section-heading"><h2>Your collection</h2><label class="inline-label">Show<select id="asset-filter"><option value="all">Everything</option><option value="visual">Visuals</option><option value="music">Music</option></select></label></div>
+        <div id="asset-list" class="asset-grid"></div>
+        <div class="notice">This app records your permissions; it cannot verify copyright ownership or guarantee that Content ID will not make a claim. Actual BTS song files need appropriate permission for this upload workflow.</div>
+      </section>
+
+      <section id="tab-queue" class="tab-panel" hidden>
+        <div class="page-heading"><div><div class="eyebrow">FROM PREVIEW TO PUBLICATION</div><h1>Every video, in its place.</h1><p id="queue-summary">Your computer prepares videos; YouTube handles accepted publication schedules.</p></div><button type="button" class="button secondary" id="pause-button">Pause new uploads</button></div>
+        <div class="notice">Pausing stops new upload starts. An in-progress upload may finish. Videos already scheduled on YouTube keep their schedules; manage those in YouTube Studio.</div>
+        <div class="section-heading"><h2>Video jobs</h2><label class="inline-label">Show<select id="job-filter"><option value="all">All videos</option><option value="review">Awaiting review</option><option value="ready">Ready to upload</option><option value="errors">Needs attention</option><option value="scheduled">Scheduled on YouTube</option></select></label></div>
+        <div id="job-list" class="job-list"></div>
+        <details class="panel activity"><summary>Recent activity</summary><ol id="event-list"></ol></details>
+      </section>
+
+      <section id="tab-settings" class="tab-panel" hidden>
+        <div class="page-heading"><div><div class="eyebrow">YOU CONTROL THE CONNECTION</div><h1>Local first. Publish when ready.</h1><p>Connect the intended channel and test one private video before enabling a full queue.</p></div></div>
+        <div class="settings-grid"><section class="panel"><span class="pill neutral" id="account-pill">Not connected</span><h2 id="account-name">Your YouTube channel</h2><p id="account-id" class="muted small">Local rendering does not need a Google account.</p><ol class="steps"><li>Enable YouTube Data API v3 in your Google project.</li><li>Create a Desktop app OAuth client and download its JSON.</li><li>Save it as <code>data/secrets/client_secrets.json</code>.</li><li>From the project folder, run:<pre>docker compose run --rm --service-ports auth</pre></li><li>Open the printed Google URL on this computer and choose your channel.</li></ol><p class="small muted">The full guide covers test users, Brand Accounts, token expiry and reconnecting. Never share your data/secrets folder.</p></section>
+        <section class="panel"><h2>Queue settings</h2><form id="settings-form">
+          <label class="check switch"><input type="checkbox" name="uploads_enabled"><span>Allow uploads of approved videos</span></label>
+          <div class="form-grid"><label>Maximum uploads / rolling 24 hours<input name="max_uploads_24h" type="number" min="1" max="24" required></label><label>Timezone<input name="timezone" required placeholder="Asia/Colombo"></label><label>Output width<select name="render_width"><option value="720">720 px · 720 × 1280</option><option value="1080">1080 px · 1080 × 1920</option></select></label><label>Encoding CPU threads<input name="threads" type="number" min="1" max="4" required></label><label>Soft storage cap (MiB)<input name="storage_limit_mb" type="number" min="256" max="102400" required></label><label>Uploaded MP4 cache retention (days)<input name="retention_days" type="number" min="0" max="90" required><span class="small muted">0 keeps files. Source assets and manifests are retained.</span></label></div>
+          <p class="small muted">A channel-specific YouTube limit can be lower than your configured cap. Keep your laptop awake until uploads finish. Already-uploaded schedules work while it is off.</p>
+          <div class="form-footer"><button type="button" class="button ghost" id="cleanup-button">Clean eligible MP4 cache</button><button type="submit" class="button primary">Save settings</button></div>
+        </form></section></div>
+      </section>
+
+      <section id="tab-guide" class="tab-panel" hidden>
+        <div class="page-heading"><div><div class="eyebrow">YOUR FIRST SESSION</div><h1>From zero to a local preview.</h1><p>Everything needed to render is free and runs on your computer.</p></div></div>
+        <div class="guide-grid"><section class="panel"><span class="step-number">01</span><h2>Try the demo</h2><p>Click “Try the free demo.” It creates original abstract backgrounds, an original tone loop and a 12-second quiz. Wait for the preview. Demo jobs cannot be uploaded.</p><button type="button" class="button secondary" id="guide-demo">Create demo preview</button></section><section class="panel"><span class="step-number">02</span><h2>Add your own collection</h2><p>Use Media &amp; music. Add your own or cleared visuals and tracks. Record permission and exact required credit. Use Edit to choose a starting section of a track or clip.</p></section><section class="panel"><span class="step-number">03</span><h2>Write a distinct video</h2><p>Use 3–6 short scene paragraphs. Choose an audience based on the actual content. Give facts and quizzes a source. Preview the rendered video and approve the finished result.</p></section><section class="panel"><span class="step-number">04</span><h2>Connect and test privately</h2><p>Follow YouTube &amp; settings and the full PDF guide. Connect through Google's official page. Verify the channel name. Enable uploads with a cap of 1 for your first private test.</p></section><section class="panel"><span class="step-number">05</span><h2>Prepare hourly slots</h2><p>Fill the CSV with different, finished scripts. Set delivery to scheduled and choose a future batch start. Use 60-minute spacing. Set your rolling cap up to 24 if your channel allows it.</p></section><section class="panel"><span class="step-number">06</span><h2>Keep it running</h2><p>Keep the app and laptop awake while producing and uploading. The queue stops at its cap and holds missed slots. Back up your data folder. This free edition does not generate AI footage, scrape clips or create new scripts unattended.</p></section></div>
+        <section class="panel"><h2>Useful commands</h2><pre>docker compose up -d --build
+docker compose logs --tail 80 studio
+docker compose stop
+docker compose start</pre><p class="small muted">Read GUIDE.md or the included PDF for Windows setup, native Linux setup, script CSV examples, backup commands and recovery steps.</p></section>
+      </section>
+    </div>
+    <footer class="main-footer"><span>Purple Local Studio</span><span>Your media. Your decisions. Your next story.</span></footer>
+  </main>
+</div>
+
+<dialog id="preview-dialog"><div class="dialog-heading"><h2 id="modal-video-title">Video preview</h2><button type="button" class="icon-button" data-close="preview-dialog" aria-label="Close preview">×</button></div><div class="preview-dialog-grid"><video id="modal-video" controls playsinline></video><div><div id="modal-job-info" class="muted small"></div><p id="modal-job-error" class="error-text"></p><div class="download-links" id="modal-downloads"></div><label class="check" id="review-check-label"><input type="checkbox" id="review-check"><span>I reviewed this video, its sources, permissions, audience and publication time.</span></label><button type="button" id="approve-button" class="button primary">Approve video</button><p id="modal-demo-note" class="small muted" hidden>Demo preview only. Write and render your own finished video before uploading.</p></div></div></dialog>
+
+<dialog id="asset-dialog"><div class="dialog-heading"><h2>Edit asset</h2><button type="button" class="icon-button" data-close="asset-dialog" aria-label="Close asset editor">×</button></div><form id="asset-edit-form"><input type="hidden" name="id"><label>Title<input name="title" maxlength="120" required></label><div class="form-grid"><label>Mood<select name="mood"><option value="any">Any</option><option value="energetic">Energetic</option><option value="calm">Calm</option><option value="emotional">Emotional</option><option value="funny">Funny</option></select></label><label>Start section (seconds)<input name="start_sec" type="number" min="0" step="0.1" required></label></div><label>Usage permission / license notes<textarea name="rights_notes" rows="3" maxlength="2000"></textarea></label><label>Required credit<textarea name="attribution" rows="2" maxlength="1500"></textarea></label><label>Source / license URL<input name="source_url" type="url"></label><label class="check"><input name="enabled" type="checkbox"><span>Enable automatic use with the permission recorded above.</span></label><div class="form-footer"><span></span><button type="submit" class="button primary">Save asset</button></div></form></dialog>
+
+<dialog id="schedule-dialog"><div class="dialog-heading"><h2>Change unuploaded job</h2><button type="button" class="icon-button" data-close="schedule-dialog" aria-label="Close schedule editor">×</button></div><form id="schedule-form"><input name="id" type="hidden"><label>Delivery<select name="delivery"><option value="private">Private upload</option><option value="scheduled">Scheduled public video</option></select></label><label>Publication time <span class="timezone-label">Asia/Colombo</span><input name="publish_local" type="datetime-local"></label><p class="small muted">A changed schedule needs approval again. Videos already scheduled on YouTube must be managed there.</p><button type="submit" class="button primary">Save schedule</button></form></dialog>
+
+<dialog id="recover-dialog"><div class="dialog-heading"><h2>Recover interrupted upload</h2><button type="button" class="icon-button" data-close="recover-dialog" aria-label="Close recovery">×</button></div><p>Check the connected channel in YouTube Studio first. If the video exists, link its ID. This verifies channel ownership and prevents another upload.</p><form id="link-form"><input name="id" type="hidden"><label>Existing YouTube video ID<input name="video_id" minlength="11" maxlength="11" required placeholder="11-character ID"></label><button type="submit" class="button secondary">Verify and link existing video</button></form><hr><label class="check"><input id="no-video-check" type="checkbox"><span>I checked YouTube Studio and confirmed that no video was created.</span></label><button type="button" id="reset-session-button" class="button danger-button">Reset unavailable upload session</button></dialog>
+
+<div id="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
